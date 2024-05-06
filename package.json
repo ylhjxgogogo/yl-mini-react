@@ -1,0 +1,16 @@
+{
+  "name": "vite-runner",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest "
+  },
+  "devDependencies": {
+    "vite": "^5.2.0",
+    "vitest": "^1.6.0"
+  }
+}
