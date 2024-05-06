@@ -94,81 +94,39 @@ const render = (el, container) => {
   requestIdleCallback(taskLoop);
 };
 
-const update = () => {
-  let newTask = {
-    props: currentRoot.props,
-    dom: currentRoot.dom,
-    alternative: currentRoot,
-  };
-  root = newTask;
-  nextTask = newTask;
-  requestIdleCallback(taskLoop);
-};
+
 function createDom(type) {
   return type === "TEXT_ELEMENT"
     ? document.createTextNode("")
     : document.createElement(type);
 }
 
-function updateProps(dom, newProps, prevProps) {
-  //3.新的参数没得，旧的有 做移除
-  Object.keys(prevProps).forEach((key) => {
+function updateProps(dom, Props) {
+  Object.keys(Props).forEach((key) => {
     if (key !== "children") {
-      if (!(key in newProps)) {
-        dom.removeAttribute(key);
+      if (key.startsWith("on")) {
+        //onClick=fn
+        const eventType = key.slice(2).toLocaleLowerCase(); //把Click划分出来，再把首字母小写->click;
+        dom.addEventListener(eventType, Props[key]);
+      } else {
+        dom[key] = Props[key];
       }
-    }
-  });
 
-  //1.新的参数有，旧的没得
-  //2.新的参数有，旧的有，但值不同
-  Object.keys(newProps).forEach((key) => {
-    if (key !== "children") {
-      if (prevProps[key] !== newProps[key]) {
-        if (key.startsWith("on")) {
-          //onClick=fn
-          const eventType = key.slice(2).toLocaleLowerCase(); //把Click划分出来，再把首字母小写->click;
-          dom.removeEventListener(eventType, prevProps[key]);
-          dom.addEventListener(eventType, newProps[key]);
-        } else {
-          dom[key] = newProps[key];
-        }
-      }
     }
   });
 }
 function initChildren(task, children) {
-  let oldChildTask = task.alternative?.child;
+
   let prevChildTask = null;
   children.forEach((childVdom, index) => {
-    const isSameType = oldChildTask && childVdom.type === oldChildTask.type;
-
-    let childTask;
-    if (isSameType) {
-      childTask = {
-        type: childVdom.type,
-        props: childVdom.props,
-        parent: task,
-        child: null,
-        sibling: null,
-        dom: oldChildTask.dom,
-        alternative: oldChildTask,
-        effectTag: "update",
-      };
-    } else {
-      childTask = {
-        type: childVdom.type,
-        props: childVdom.props,
-        parent: task,
-        child: null,
-        sibling: null,
-        dom: null,
-        effectTag: "placement",
-      };
-    }
-    if (oldChildTask) {
-      oldChildTask = oldChildTask.sibling;
-    }
+    let childTask = {
+      type: childVdom.type,
+      props: childVdom.props,
+      parent: task,
+      child: null,
+      sibling: null,
+      dom: null,
+    };
     if (index === 0) {
       task.child = childTask;
     } else {
@@ -248,12 +206,8 @@ function commitWork(task) {
   while (!taskParent.dom) {
     taskParent = taskParent.parent;
   }
-  if (task.effectTag === "update") {
-    updateProps(task.dom, task.props, task.alternative.props);
-  } else if (task.effectTag === "placement") {
-    if (task.dom) {
-      taskParent.dom.append(task.dom);
-    }
+  if (task.dom) {
+    taskParent.dom.append(task.dom);
   }
   commitWork(task.child);
   commitWork(task.sibling);
@@ -261,6 +215,6 @@ function commitWork(task) {
 const React = {
   render,
   createElement,
-  update,
+
 };
 export default React;

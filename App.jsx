@@ -1,7 +1,7 @@
 /**@jsx YReact.createElement */
 //告诉vite使用上面定义的编译
-import YReact from "../core/React";
-import React from "../core/React";
+import YReact from "./core/React";
+import React from "./core/React";
 // function App() {
 //   return <div id="app">hi-mini-react</div>;
 // }
@@ -10,7 +10,6 @@ const Counter = () => {
   const handleClick = () => {
     console.log("click");
     num++;
-    React.update();
   };
   return (
     <div>
